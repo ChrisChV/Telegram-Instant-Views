@@ -1,0 +1,15 @@
+~version: "2.0"
+
+$tbody: //div[@id="article-body"]
+
+body: $tbody
+title: //header[has-class("story-header")]/h1
+
+cover: $tbody/div[has-class("media")]/figure
+
+@append(<related>): $tbody
+@replace_tag(<h1>): //div[has-class("related-news box-mod")]/div[@class="box-header"]/div
+@append_to($tbody/related)
+@append_to($tbody/related): //div[has-class("related-news box-mod")]/div/div/div/div/h2/a
+
+
