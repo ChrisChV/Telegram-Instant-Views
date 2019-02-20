@@ -1,0 +1,85 @@
+~version: "2.0"
+
+@if(//section[has-class("content-continued-body clearfix")]){
+  $tbody: //section[has-class("content-continued-body clearfix")]
+}
+@if_not(//section[has-class("content-continued-body clearfix")]){
+  $tbody: //div[has-class("container")]/section[@role="main"]/div[@class="row "]
+  
+}
+
+
+body: $tbody
+title: //div[has-class("container")]/section/section/h1[@class="title"]
+title: //h4[@class="title "]
+subtitle: //div[has-class("container")]/section/section/h3[@class="subtitle"]
+
+@replace("Por ",""): //div[has-class("affix-start")]/p/text()
+author: $@
+author: //div[has-class("author-name")]/p/a/text()
+author_url: //div[has-class("author-name")]/p/a/@href
+
+##Para dar formato a los i frame
+@replace_tag(<div>): $tbody//iframe/../../../..
+@replace_tag(<div>): $tbody//img/..
+@replace_tag(<div>): $tbody//p/article/..
+@replace_tag(<div>): $tbody//blockquote[@class="twitter-tweet"]/../../../..
+@replace_tag(<div>): $tbody//blockquote[@class="instagram-media"]/../../../..
+
+
+##Para dar formato a las imagenes
+@replace("_160","_720"): //img/@src
+@replace_tag(<figure>): //img/..
+@replace_tag(<figcaption>): //img/../div
+@replace_tag(<cite>): $@/h4
+@remove: $tbody//article[has-class("media col-md-4 inline-story")]
+
+
+cover: //div[has-class("container")]/section/section/div[@class="lead-gallery "]/div/figure
+
+##Para dar formato a la fecha
+@replace("/",""): //p[has-class("published-date")]/text()
+@datetime(0, "es-ES", "EEEE dd 'de' MMMM 'de' yyyy")
+published_date: $@
+@datetime(0, "es-ES", "dd 'de' MMM 'de' yyyy"): $tbody//strong[@class="timestamp "]/text()
+published_date: $@
+@remove: $tbody//strong[@class="timestamp "]
+
+##Para dar formato a las noticias relacionadas
+@replace_tag(<div>): //div[@id="notas-relacionadas"]/div/div/div/div/div[@class="media-body"]/h4
+@remove: //div[@id="notas-relacionadas"]/div/div/div/div/div[@class="media-body"]/p
+@replace_tag(<related>): //div[@id="notas-relacionadas"]/div
+@append_to($tbody)
+@append(<h1>)
+@append("Noticias Relacionadas"): $@
+
+##Para dar formato a los quotes
+@if_not($tbody//span[has-class("quote")]/next-sibling::p/span[@class="cite"]) {
+  @replace_tag(<blockquote>): $tbody//span[has-class("quote")]/..
+  @replace_tag(<cite>): $tbody//span[has-class("quote")]/../span[@class="cite"]
+  @append("\""): $tbody//span[has-class("quote")]/../span
+  @prepend("\""): $tbody//span[has-class("quote")]/../span  
+}
+@if($tbody//span[has-class("quote")]/next-sibling::p/span[@class="cite"]){  
+  @wrap(<div>): $tbody//span[has-class("quote")]    
+  @replace_tag(<blockquote>): $tbody//span[has-class("quote")]/..
+  @replace_tag(<cite>): $tbody//span[has-class("quote")]/../next-sibling::p/span[@class="cite"]
+  @append_to($tbody//span[has-class("quote")]/..)
+}
+
+
+@remove: //div[has-class("sharing-menu")]
+
+@unsupported: //figure[has-class("wf-media posterframe-wrapper")]
+#@unsupported: $tbody//div[has-class("infographicWrapper")]/iframe
+
+
+
+
+
+
+
+
+
+
+
