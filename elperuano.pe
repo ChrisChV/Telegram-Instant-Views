@@ -1,0 +1,84 @@
+~version: "2.0"
+
+@if(//article[@class="notatexto"]){
+  $tbody: //article[@class="notatexto"]
+}
+@if_not(//article[@class="notatexto"]) {
+  @if(//div[has-class("elcontenido")]){
+    $tbody: //div[has-class("elcontenido")]
+  }
+  @if_not(//div[has-class("elcontenido")]) {
+    $tbody: //div[@class="col s12 m8 l8"]
+  }
+}
+
+
+
+
+body: $tbody
+
+@replace_tag(<div>): $tbody//em/img/..
+
+
+kicker: //div[@class="seccionportada"]/b
+kicker: //main[@class="eltitular"]/h3
+kicker: //div[has-class("lonuestro")]//h4
+kicker: //div[has-class("parallax-container6")]//h5
+title: //div[@class="seccionportada"]/h1
+title: //main[@class="eltitular"]//h1
+title: //div[has-class("lonuestro")]//h1
+title: //div[has-class("parallax-container6")]//div[@class="titularh1"]
+
+subtitle: //div[@class="seccionportada"]/p
+subtitle: //main[@class="eltitular"]//strong[has-class("serif")]
+subtitle: //div[has-class("parallax-container6")]//div[has-class("titularh2")]
+cover: //div[@class="seccionportada"]/img
+cover: //div[@class="parallax-container8 "]//img
+cover: //div[has-class("parallax-container6")]//img
+
+@datetime(0, "es-ES", "dd/MM/yyyy"): $tbody/p[1]/b/text()
+published_date: $@
+
+author: $tbody//div[@style=" font-family: sans-serif;"]/div/p/strong
+author: //main[@class="eltitular"]//div//cite/b
+author: //div[has-class("parallax-container6")]//div[has-class("no-margin")]//b
+
+
+site_name: "El Peruano"
+
+@replace_tag(<div>): $tbody//p/img/..
+
+@if(//div[@class="seccionportada"]/h2){
+  @prepend_to(//div[@class="seccionportada"]/p): $@
+}
+
+@wrap_inner(<b>): //div[has-class("lonuestro")]//div
+
+@replace_tag(<related>): //aside//h6[@class="titularrojo"]/..
+@append_to($tbody): $@
+@remove: $@/div[has-class("no-padding")]
+
+
+@replace_tag(<related>): //div[@class="col s12 m4 l3 offset-l1"]
+@append_to($tbody): $@
+@remove: $@//div[has-class("padding15")]
+
+@replace_tag(<aside>): $tbody//div[has-class("cita")]
+@map($tbody//aside[has-class("cita")]){
+  $taside: $@
+  @append("\""): $taside
+  @prepend("\""): $taside
+}
+
+
+
+@remove: $tbody//ul[@class="icon-compartir"]
+@remove: $tbody/p[1]
+#@remove: $tbody/p[1]
+@remove: $tbody//div[@style=" font-family: sans-serif;"]
+@remove: $tbody//div[has-class("lonuestro")]//h6
+@remove: //meta[@name="author"]
+
+
+
+

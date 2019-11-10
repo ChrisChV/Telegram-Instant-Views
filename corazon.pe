@@ -1,0 +1,98 @@
+~version: "2.0"
+
+@if(//section[has-class("main-content")]){
+  $tbody: //section[has-class("main-content")]
+}
+@if(//div[@id="article-body"]){
+  $tbody: //div[@id="article-body"]
+}
+
+@map($tbody//figure[@itemprop="image"]//img){
+  @set_attr(src, ./@content): $@
+}
+
+
+
+
+body: $tbody
+
+title: //h1[@class="title-l"]
+title: //h1[@itemprop="headline"]
+subtitle: $tbody//h4[@class="title-xs"]/next-sibling::p
+subtitle: //div[@class="sumary"]/p
+description: $subtitle
+site_name: "Radio Corazón"
+
+@replace_tag(<figure>): //div[has-class("block-media-full")]
+@replace_tag(<figcaption>): $@//div[@class="image-credit"]
+@set_attr(src, ./@content): //figure[has-class("block-media-full")]//img
+cover: //figure[has-class("block-media-full")]
+
+@replace_tag(<div>): $tbody//p/iframe/..
+
+@replace("T", " "): //meta[@property="og:updated_time"]/@content
+@replace(":[0-9][0-9]-.*", "")
+published_date: $@
+
+@replace("T", " "): //time/@datetime
+@replace(":[0-9][0-9]-.*", "")
+published_date: $@
+
+author: //div[@class="story-author"]/span
+
+@map($tbody//figure){
+  $tfigure: $@
+  @html_to_dom: $tfigure/img/@data-params
+  @json_to_xml: $@/text()
+  @set_attr(src, $@/src/text()): $tfigure/img
+  
+}
+
+@replace_tag(<related>): $tbody//article[has-class("wrapper-relatedframe")]
+@replace_tag(<h1>): $@//span
+
+@map($tbody//section[has-class("img-news")]){
+  $tvideo: $@
+  @replace_tag(<figure>): $tvideo
+  $tvideo: $@
+  @html_to_dom: $tvideo/../next-sibling::script/text()
+  @debug
+  #@match("https:.*mp4"): $@/text()
+  
+  
+  @replace("\\\\", ""): $@/text()
+  @match("{.*}")
+  @json_to_xml
+  @match("p/.*"): $@/item[1]/text()
+  @replace("p/", "https://p-gruporpp-media.s3.amazonaws.com/")
+  @append(<video>, src, $@): $tvideo
+  @replace_tag(<div>): $tvideo/..
+  @replace_tag(<figcaption>): $@/figure/div[@class="help-media"]
+  
+  
+  #$txml: $@
+  #@if($txml/item[@name="240p"]/text()){
+  #  $tsrc: $txml/item[@name="240p"]/text()
+  #}
+  #@if($txml/item[@name="360p"]/text()){
+  #  $tsrc: $txml/item[@name="360p"]/text()
+  #}
+  
+}
+
+@replace_tag(<slideshow>): //div[has-class("slide") and @itemtype="http://schema.org/ImageGallery"]
+@prepend_to($tbody)
+
+@map($tbody//slideshow//figure){
+  $tfigure: $@
+  @replace_tag(<cite>): $tfigure//span[@class="creditos"]/strong[text()]
+  @append_to($tfigure//figcaption): $@
+}
+
+
+
+
+
+@remove: $tbody//ul[has-class("social-link")]
+@remove: $tbody//div[has-class("social-link-movil")]
+@remove: $tbody//aside[@class="asideAds"]

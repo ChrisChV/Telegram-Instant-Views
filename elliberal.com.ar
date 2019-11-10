@@ -1,0 +1,51 @@
+~version: "2.1"
+
+$tbody: //article[@class="nota"]
+body: $tbody
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//li/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//a/iframe/..
+
+
+title: $tbody//h1[@itemprop="headline"]
+subtitle: $tbody//p[@itemprop="description"]
+author: $tbody//h3[@itemprop="author"]/span/text()
+kicker: $tbody//span[@class="ante"]
+
+@datetime(0, "es-ES", "dd/MM/yy"): $tbody//p[@itemprop="articleBody"]/b/text()
+published_date: $@
+
+
+site_name: "El Liberal"
+
+cover: $tbody//div[@id="fotos"]//figure
+
+@replace_tag(<related>): $tbody//ul[@class="relacionadas"]
+@append_to($tbody)
+@replace_tag(<h1>): $@//li[not(@class)]
+
+@map($tbody//img){
+  @set_attr(src, ./@data-orig): $@
+}
+
+@remove: $tbody//a[has-class("antesec")]/..
+@remove: $tbody//h3[@itemprop="author"]
+@remove: $tbody//div[@itemprop="publisher"]
+@remove: $tbody//div[@class="ntsoc2"]
+@remove: $tbody//div[@class="nttag"]
+@remove: $tbody//div[@class="bannernota2"]
+@remove: ($tbody//p[@itemprop="articleBody"]/b)[1]
+@remove: $tbody//ul[@id="myTabs"]
+
+@map($tbody//figure){
+  @append_to($@): $@/next-sibling::div/figcaption
+}
+
+
+@replace(" -", ""): ($tbody//p[@itemprop="articleBody"]/text())[1]
+
+

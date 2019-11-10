@@ -1,0 +1,72 @@
+~version: "2.1"
+
+?path_not: /
+
+@if(//div[@class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-9"]){
+  $tbody: //div[@class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-9"]  
+}
+@if_not($tbody//div[@id="player"]) {
+  @append_to($tbody): //div[@id="player"]/..
+}
+
+
+
+body: $tbody
+
+site_name: "ATV.pe"
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//p/div/img/../..
+
+title: $tbody//h2[@class="title_detalle-categoria"]
+title: //h3[@class="title_programa-vod"]
+subtitle: $tbody//h4[@class="subtitle-detalle-categoria"]
+
+description: $subtitle
+
+
+
+@replace(" \\| ", " "): $tbody//span[has-class("hrs_detalle-categoria")]/text()
+@datetime(0, "es-ES", "EEEE, dd 'de' MMMM 'de' yyyy hh:mm")
+published_date: $@
+@match("Programa del .*"): //h3[@class="fecha-video-vod"]
+@replace("Programa del ", "")
+@datetime(0, "es-ES", "dd 'de' MMMM 'del' yyyy")
+published_date: $@
+
+cover: $tbody//img[has-class("img-fluid-news")]
+
+
+@map($tbody//div[@id="player"]){
+  $tvideo: $@
+  @remove: $tvideo/text()
+  @html_to_dom: $tvideo/next-sibling::script
+  @match("theFile = .*;")
+  @replace("theFile = ", "")
+  @replace("\\\"", "")
+  @replace(";", "")
+  $tdom: $@
+  @append(<video>, src, $@/text()): $tvideo
+  @remove: $tdom
+}
+
+@append_to($tbody): $tbody//div[has-class("box_enlaces_news")]
+@combine: $tbody//div[has-class("box_enlaces_news")]/next-sibling::div[has-class("box_enlaces_news")]
+@replace_tag(<related>): $tbody//div[has-class("box_enlaces_news")]
+@replace_tag(<h1>): $@/div/div/p
+
+
+
+@remove: $tbody//div[@class="d-flex bd-highlight align-items-center mb-0"]
+@remove: $tbody//div[@class="add-inner"]
+@remove: $tbody//ul[has-class("redes_sociales")]
+@remove: $tbody//div[has-class("block-title_tags")]
+@remove: $tbody//div[@class="row mb-3"]
+@remove: $tbody//h2[@class="title_seccion-mas-noticias"]
+@remove: //meta[@name="author"]
+
+@debug: $tbody//iframe
+

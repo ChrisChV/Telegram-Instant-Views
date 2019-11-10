@@ -1,5 +1,7 @@
 ~version: "2.0"
 
+
+
 @if(//section[has-class("content-continued-body clearfix")]){
   $tbody: //section[has-class("content-continued-body clearfix")]
 }
@@ -8,6 +10,7 @@
   
 }
 
+#@debug: $tbody/
 
 body: $tbody
 title: //div[has-class("container")]/section/section/h1[@class="title"]
@@ -19,12 +22,18 @@ author: $@
 author: //div[has-class("author-name")]/p/a/text()
 author_url: //div[has-class("author-name")]/p/a/@href
 
-##Para dar formato a los i frame
+##Para dar formato a los iframe
 @replace_tag(<div>): $tbody//iframe/../../../..
 @replace_tag(<div>): $tbody//img/..
 @replace_tag(<div>): $tbody//p/article/..
 @replace_tag(<div>): $tbody//blockquote[@class="twitter-tweet"]/../../../..
 @replace_tag(<div>): $tbody//blockquote[@class="instagram-media"]/../../../..
+@replace_tag(<div>): $tbody//div[has-class("youtubeWrapper")]/../../../..
+@replace_tag(<div>): $tbody//iframe/../../../../..
+@after_el($tbody//iframe/../../../../../../../ul): $tbody//iframe/../../../../../../../ul/div/div/div/div/div
+ 
+
+ 
 
 
 ##Para dar formato a las imagenes
@@ -32,8 +41,14 @@ author_url: //div[has-class("author-name")]/p/a/@href
 @replace_tag(<figure>): //img/..
 @replace_tag(<figcaption>): //img/../div
 @replace_tag(<cite>): $@/h4
-@remove: $tbody//article[has-class("media col-md-4 inline-story")]
+#@remove: $tbody//article[has-class("media col-md-4 inline-story")]
+@remove: $tbody//article[has-class("media col-md-4 inline-story")]/div/div[@class="img-container picture"]
 
+##Para dar formato a las noticias relacionadas dentro del articulo
+@replace_tag(<h1>): $tbody//article[has-class("media col-md-4 inline-story")]/div/p[@class="kicker "]
+@replace_tag(<div>): $@/a
+@replace_tag(<div>): $tbody//article[has-class("media col-md-4 inline-story")]/div/h4[@class="title "]
+@replace_tag(<related>): $tbody//article[has-class("media col-md-4 inline-story")]/div
 
 cover: //div[has-class("container")]/section/section/div[@class="lead-gallery "]/div/figure
 
@@ -51,30 +66,114 @@ published_date: $@
 @replace_tag(<related>): //div[@id="notas-relacionadas"]/div
 @append_to($tbody)
 @append(<h1>)
-@append("Noticias Relacionadas"): $@
+@append("Notas Relacionadas"): $@
+
+
+@append_to($tbody/div): $tbody//related[@class="row"]
+
+
 
 ##Para dar formato a los quotes
-@if_not($tbody//span[has-class("quote")]/next-sibling::p/span[@class="cite"]) {
-  @replace_tag(<blockquote>): $tbody//span[has-class("quote")]/..
-  @replace_tag(<cite>): $tbody//span[has-class("quote")]/../span[@class="cite"]
-  @append("\""): $tbody//span[has-class("quote")]/../span
-  @prepend("\""): $tbody//span[has-class("quote")]/../span  
+@map($tbody//span[has-class("quote")]){
+$tquote: $@
+@if_not($tquote/next-sibling::p/span[@class="cite"]) {
+  @if_not( $tquote/../text()) {
+      @replace_tag(<aside>): $tquote/..
+    @if_not($tquote/../span[@class="cite"]){
+      @replace_tag(<cite>): $tquote/../next-sibling::p/span[@class="cite"]
+      @append_to($tquote/..): $@
+    }
+    @if($tquote/../span[@class="cite"]){
+      @replace_tag(<cite>): $tquote/../span[@class="cite"]
+    }
+
+    @append("\""): $tquote/../span
+     @prepend("\""): $tquote/../span
+     @wrap(<b>): $tquote   
+  }
+  @if( $tquote/../text()) {
+    
+    @wrap(<aside>): $tquote
+    #@before_el($tquote/../..): $tquote/..
+    @replace_tag(<div>): $tquote/../..
+    @if_not($tquote/../span[@class="cite"]){
+      @replace_tag(<cite>): $tquote/../next-sibling::p/span[@class="cite"]
+      @append_to($tquote/..): $@
+    }
+    @if($tquote/../span[@class="cite"]){
+      @replace_tag(<cite>): $tquote/../span[@class="cite"]
+    }
+
+    @append("\""): $tquote/../span
+     @prepend("\""): $tquote/../span
+     @wrap(<b>): $tquote 
+  }
 }
-@if($tbody//span[has-class("quote")]/next-sibling::p/span[@class="cite"]){  
-  @wrap(<div>): $tbody//span[has-class("quote")]    
-  @replace_tag(<blockquote>): $tbody//span[has-class("quote")]/..
-  @replace_tag(<cite>): $tbody//span[has-class("quote")]/../next-sibling::p/span[@class="cite"]
-  @append_to($tbody//span[has-class("quote")]/..)
+  @if($tquote/next-sibling::p/span[@class="cite"]){  
+    @wrap(<div>): $tquote   
+    @replace_tag(<aside>): $tquote/..
+    @replace_tag(<cite>): $tquote/../next-sibling::p/span[@class="cite"]
+    @append_to($tquote/..)
+    @append("\""): $tquote/../span
+   @prepend("\""): $tquote/../span
+   @wrap(<b>): $tquote 
+  }
 }
 
+
+
+
+
+##Para dar formato a los slideshow
+@replace_tag(<slideshow>): //div[has-class("body-lead-gallery")]
+
+
+@if($cover/figcaption/cite/span[@class="pic-credits"]){
+  @after_el($cover/figcaption/cite): $cover/figcaption/cite/text()
+  @replace("/.", ""): $cover/figcaption/cite/span/text()
+}
+
+
+@replace("Lee más de El Sol de.*", ""): $tbody//h2/b
+@replace("via GIPHY", ""): $tbody//a
 
 @remove: //div[has-class("sharing-menu")]
+@remove: //iframe[has-class("giphy-embed")]/../p
+@remove: $tbody//a[has-class("twitter-follow-button")]
+@remove: $tbody//script
+@set_attr(id, "related_article"): $tbody//article/..
+@combine: $tbody//div[@id="related_article"]/next-sibling::div[@id="related_article"]
+@combine: $tbody//h3[@id="related_article"]/next-sibling::h3[@id="related_article"]
+#@debug: $tbody//div[@id="related_article"]/next-sibling::related
+#@remove: $tbody//div[@id="related_article"]
+
+@remove: $tbody//related[@class="row"]/prev-sibling::p/prev-sibling::div[@id="related_article"]
+@remove: $tbody//related[@class="row"]/prev-sibling::div[@id="related_article"]
+@remove: $tbody//related[@class="row"]/prev-sibling::h3[@id="related_article"]
+
+
+#@debug: $tbody//related[@class="row"]/prev-sibling::div[@id="related_article"]/h1
+
+#@map($tbody//div[@id="related_article"]){
+#  $reltemp: $@
+#  @if($reltemp/../next-sibling::related){
+#    @remove: $reltemp
+#  }
+#}
+
+
+
 
 @unsupported: //figure[has-class("wf-media posterframe-wrapper")]
 #@unsupported: $tbody//div[has-class("infographicWrapper")]/iframe
 
+@replace_tag(<div>): $tbody//h3[@id="related_article"]
 
 
+?path:/gossip/celebridades/empeora-salud-de-ozzy-osbourne-el-cantante-cancela-mas-conciertos-3080589.html
+@replace_tag(<p>): ($tbody//blockquote)[1]
+@after_el($@): $@/span
+@replace_tag(<blockquote>)
 
 
 

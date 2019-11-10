@@ -1,0 +1,37 @@
+~version: "2.0"
+
+$tbody: //div[@class="glr-node-content"]
+body: $tbody
+
+@replace_tag(<p>): $tbody//div
+
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/blockquote/..
+
+
+title: //div[@class="content clearfix"]/h1[@id="node-noticia"]
+subtitle: //div[@class="glr-node-resumen"]/p
+@replace_tag(<p>): //div[@class="glr-node-resumen"]/div
+subtitle: $@
+
+@datetime(0,"es-ES", "dd 'de' MMMMM 'de' yyyy hh:mm"): //p[@class="fechaNota"]/text()
+published_date: $@
+
+@wrap_inner(<figure>): //div[@class="nota-slider"]
+@replace_tag(<figcaption>): $@/div/div[@class="detail"]
+@append_to(//div[@class="nota-slider"]/figure/div/figcaption//p[@class="creditos-slider"]): //div[@class="nota-slider"]/figure/div/figcaption//p[@class="fuente-slider"]
+@replace_tag(<cite>): //div[@class="nota-slider"]/figure/div/figcaption//p[@class="creditos-slider"]
+cover: //div[@class="nota-slider"]/figure
+
+site_name: "el Popular.pe"
+
+@remove: //p[@class="fechaNota"]
+@remove: //meta
+
+@replace("\u00a0", ""): $tbody//p/text()
+
+
+

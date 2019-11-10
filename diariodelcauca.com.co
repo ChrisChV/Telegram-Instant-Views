@@ -1,0 +1,116 @@
+~version: "2.1"
+
+?exists: //meta[@itemprop="description"]
+!path_not: /contacto
+!path_not: /contacto/
+
+$tbody: //div[has-class("region-content")]//div[has-class("field-name-body")]
+body: $tbody
+
+
+@if_not($tbody//table[@class="t-audio"]){
+  @prepend_to($tbody): //div[has-class("field-name-field-audio")]
+  @remove: $@//img
+  @replace_tag(<audio>): //div[has-class("field-name-field-audio")]//a
+  @wrap(<figure>)
+  @wrap_inner(<figcaption>): $@/audio
+  @set_attr(src, ./@href): $@/..
+}
+@if($tbody//table[@class="t-audio"]){
+  $ttable: $@
+  @wrap_inner(<div>): $ttable
+  @remove: $@
+  @replace_tag(<div>): $ttable
+  @prepend_to($@): //div[has-class("field-name-field-audio")]
+  @remove: $@//img
+  @replace_tag(<audio>): //div[has-class("field-name-field-audio")]//a
+  @wrap(<figure>)
+  @wrap_inner(<figcaption>): $@/audio
+  @set_attr(src, ./@href): $@/..
+}
+
+
+
+@html_to_dom: $tbody//code
+
+@replace_tag(<video>): $tbody//iframe[contains(@src, "gif")]
+@replace("gifs.com", "j.gifs.com"): $@/@src
+@replace("/embed", "")
+@replace("$", ".gif")
+
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//pre
+@replace_tag(<div>): $tbody//p/video/..
+
+
+title: //div[has-class("region-content")]//div[@class="field field-title"]//h2/a
+
+
+
+
+
+  @prepend_to($tbody): //div[has-class("field-name-field-images")]
+  @replace_tag(<slideshow>)
+
+  
+#  $temp: //div[has-class("region-content")]//div[@class="field field-title"]/prev-sibling::div[has-class("field-name-field-image")]//img[(@alt and not(@alt="")) or (@title and not(@title = ""))]
+#@debug: //div[has-class("region-content")]//div[@class="field field-title"]/prev-sibling::div[has-class("field-name-field-image")]//img[@src]
+  
+
+#@if($temp){
+#@if_not(//div[has-class("field-name-field-images")]){
+
+  @replace_tag(<figure>): //div[has-class("region-content")]//div[@class="field field-title"]/prev-sibling::div[has-class("field-name-field-image")]
+  $tcover: $@
+  @append(<figcaption>)
+  @append(<cite>): $@
+  @html_to_dom: $tcover//img/@title
+  @append_to($tcover//figcaption): $@/text()
+  @html_to_dom: $tcover//img/@alt
+  @append_to($tcover//cite): $@/text()
+    cover: $tcover
+    
+  
+  
+  
+#}
+#@if(//div[has-class("field-name-field-images")]){
+
+#}
+
+site_name: "Diario del Cauca"
+
+
+
+@datetime(0,"es-ES", "EEEE, MMMM dd, yyyy '-' HH:mm"): //div[has-class("region-content")]//div[@class="field field-title"]/next-sibling::div[has-class("field-datetime")]//text()
+published_date: $@
+
+
+
+@replace_tag(<related>): //div[has-class("field-name-field-related")]
+@append_to($tbody)
+@remove: $@//a/img/..
+@remove: $tbody//related//a[@data-disqus-identifier]
+@replace_tag(<h1>): $tbody//related/div[@class="field-label"]
+
+@map($tbody//img){
+  @wrap(<figure>): $@
+  $tfigure: $@
+  @append(<figcaption>)
+  @append(<cite>): $@
+  @html_to_dom: $tfigure//img/@title
+  @append_to($tfigure//figcaption): $@/text()
+  @html_to_dom: $tfigure//img/@alt
+  @append_to($tfigure//cite): $@/text()
+}
+
+
+
+
+@replace("\u00a0", ""): $tbody//p/text()
+
+

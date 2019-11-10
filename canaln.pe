@@ -1,0 +1,41 @@
+~version: "2.1"
+
+$tbody: //div[@class="cont_p"]
+body: $tbody
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+
+
+
+title: //h1[has-class("gh_hn")]
+published_date: //time[@content]/@content
+
+@html_to_dom: //meta[@name="description"]/@content
+description: $@
+site_name: "canalN.pe"
+
+@replace_tag(<div>): //div[@class="cont_fotointerna_n"]/figcaption
+@replace_tag(<figcaption>): //div[@class="cont_fotointerna_n"]//figure/span
+@replace_tag(<cite>): //div[@class="cont_fotointerna_n"]/div/div/span/h4
+@append_to(//div[@class="cont_fotointerna_n"]//figure/figcaption): $@
+
+
+
+
+cover: //div[@class="cont_fotointerna_n"]//figure
+
+
+@replace_tag(<related>): //div[has-class("cont_recomendadas_int")]
+@append_to($tbody): $@
+@remove: $tbody//related//div[@class="body_nvl3"]
+
+
+@append_to($tbody): //div[@class="ooyala_contenedor"]
+@unsupported: //div[@class="ooyala_contenedor"]
+
+@unsupported: $tbody//div[@class="cpi-node" and @data-embed="table"]
+
+

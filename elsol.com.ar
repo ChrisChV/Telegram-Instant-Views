@@ -1,0 +1,76 @@
+~version: "2.1"
+
+?path_not: /page/static/contacto
+!path_not: /page/static/terminos-y-condiciones
+
+$tbody: //div[@class="note-content__container"]
+body: $tbody
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//a/iframe/..
+@replace_tag(<div>): $tbody//p/div/img/../..
+
+title: //h1[@class="note__title"]
+@replace("\n", ""): //div[@class="note__pre-title-component note__date"]/text()
+@replace("  ", "")
+@datetime(0, "es-ES", "dd 'de' MMMM 'de' yyyy")
+published_date: $@
+
+author: //div[@class="note__author-title"]//a/text()
+@wrap(<figure>): //div[@class="note__main-media"]//img
+$tfig: $@
+@if(($tfig)[2]){
+  cover: ($tfig)[2]
+}
+@if_not(($tfig)[2]){
+  cover: $tfig
+}
+@append_to($cover): $cover/next-sibling::div[@class="media__title"]
+@replace_tag(<figcaption>)
+
+
+
+kicker: //div[@class="note__pre-title-component note__kicker"]
+image_url: $cover/img/@src
+
+
+
+@map($tbody//img){
+  @wrap(<figure>): $@
+  $tfigure: $@
+  @html_to_dom: $@/img/@footer
+  @replace_tag(<figcaption>)
+  @append_to($tfigure)
+}
+
+
+@map($tbody//img[@media-gallery]){
+  $tfigure: $@/..
+  @html_to_dom: $tfigure//img[@media-gallery]/@list
+  @replace("\\[{", "{\"images\":[{")
+  @replace("}\\]", "}]}")
+  @json_to_xml
+  $txml: $@
+  @wrap(<slideshow>): $tfigure
+  $tslide: $@
+  @remove: $@/figure
+  @append_to($tslide): $txml
+  @replace_tag(<figure>): $txml//item
+  @map($@){
+    @append(<img>, src, .//path/text()): $@
+  }
+  @replace_tag(<figcaption>): $txml//figure//footer
+  
+}
+
+@map($tbody//div[@href]/figure) {
+  @set_attr(href, $@/../@href): $@//img  
+}
+
+
+
+
+@remove: $tbody//div[@class="note__author-info"]
