@@ -1,0 +1,21 @@
+~version: "2.1"
+
+$tbody: //article[@class="content-container"]
+body: $tbody
+
+@debug: //script
+
+title: $tbody//h1
+author: $tbody//span[@class="author"]/text()
+@replace(" \\| ", " "): $tbody//span[@class="publish-date"]/text()
+@datetime(0, "es-ES", "dd MM'.' yyyy hh:mm")
+published_date: $@
+subtitle: $tbody//h2[@class="resume"]
+
+cover: $tbody//img[@class="news-picture"]
+
+@remove: $tbody//div[@class="news-metadata"]
+@remove: $tbody//div[@class="content-tags"]
+@remove: $tbody//fox-dfp-ad
+
+

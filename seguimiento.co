@@ -1,0 +1,93 @@
+~version: "2.1"
+
+?path_not: /quienes-somos
+!path_not: /quienes-somos/
+
+$tbody: //div[has-class("field-name-body")]//div[@class="field-item even"]
+body: $tbody
+
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//p//audio/..
+
+
+title: //h1[@class="title-main"]
+subtitle: //div[has-class("field-name-field-subtitulo")]/div
+author: //div[@class="by-user"]
+author_url: //div[@class="by-user"]//a/@href
+
+site_name: "Seguimiento.co"
+
+@if(//div[has-class("field-name-field-video")]){
+  @append(<iframe>, src, $@/div/div/text()): $@
+  @wrap(<figure>): $@
+  $tcover: $@
+  @append(<figcaption>)
+  @append(<cite>): $@
+  @html_to_dom: //div[has-class("detail-image")]//@alt
+  @append_to($tcover//figcaption)
+  @html_to_dom: //div[has-class("detail-image")]//@title
+  @append_to($tcover//cite)
+  cover: $tcover
+}
+@if_not(//div[has-class("field-name-field-video")]){
+  @wrap(<figure>): //div[has-class("field-name-field-image")]//img
+  $tcover: $@
+  @html_to_dom: $@//img/@alt
+  @append_to($tcover)
+  @replace_tag(<figcaption>)
+  @html_to_dom: $tcover//img/@title
+  @append_to($tcover/figcaption)
+  @replace_tag(<cite>)
+  cover: $tcover
+  cover: //div[has-class("video-player")]//img 
+}
+
+##Para dar formato a las figuras
+@map($tbody//img){
+  @wrap(<figure>): $@
+  $tfigure: $@
+  @html_to_dom: $@//img/@alt
+  @append_to($tfigure)
+  @replace_tag(<figcaption>)
+  @html_to_dom: $tfigure//img/@title
+  @append_to($tfigure/figcaption)
+  @replace_tag(<cite>)
+}
+
+published_date: //span[@class="date-display-single"]/@content
+
+
+
+@if((//div[has-class("field-name-field-image")]//img)[2]){
+  @replace_tag(<slideshow>): //div[has-class("field-name-field-image")]
+  $tslide: $@
+}
+@if(//div[has-class("field-name-field-imagen-galeria")]){
+  @replace_tag(<slideshow>): $@
+  $tslide: $@
+}
+
+
+@prepend_to($tbody): $tslide
+@map($@//img){
+  @wrap(<figure>): $@
+  $tfigure: $@
+  @html_to_dom: $@//img/@alt
+  @append_to($tfigure)
+  @replace_tag(<figcaption>)
+  @html_to_dom: $tfigure//img/@title
+  @append_to($tfigure/figcaption)
+  @replace_tag(<cite>)
+}
+
+
+@replace_tag(<related>): //div[@class="node-references"]
+@append_to($tbody)
+
+@replace("\u00a0", ""): $tbody//p/text()
+
+@remove: //meta[@name="author"]

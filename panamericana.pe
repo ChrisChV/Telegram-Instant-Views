@@ -1,0 +1,64 @@
+~version: "2.1"
+
+
+
+$tbody: (//article[@class="nota"])[2]
+body: $tbody
+
+@replace_tag(<div>): $tbody//a/div/img/../..
+
+
+
+#$temp: $tbody//video[contains(@data-iframe, "youtube")]
+
+@map($tbody//video){
+  @replace_tag(<iframe>): $@
+  @set_attr(src, ./@data-iframe): $@
+}
+
+
+title: (//article[@class="nota"])[1]//h2
+subtitle: (//article[@class="nota"])[1]//p
+
+@datetime(0, "es-ES", "dd/MM/yyyy"): (//article[@class="nota"])[1]/span/text()
+published_date: $@
+
+@wrap(<figure>): //div[@itemprop="associatedMedia"]//img
+@append_to($@): //div[@itemprop="associatedMedia"]//div[@class="_descripcion"]
+@replace_tag(<cite>): $@
+@wrap(<figcaption>)
+
+@map($tbody//post){
+  @replace_tag(<iframe>)
+  $tiframe: $@
+  @if($tiframe/@href){
+     @if_not($tiframe/@src){
+        @set_attr(src, ./@href): $tiframe
+     }
+  }
+}
+
+@html_to_dom: //div[@class="pantalla-gigante"]/next-sibling::script
+@replace("\\\\", "")
+@match("items.*}];")
+@replace("items = ", "{\"items\":")
+@replace(";", "}")
+@json_to_xml: $@/text()
+$tslide: $@
+@map($tslide//item){
+  @replace_tag(<figure>): $@
+  #@append_to($@, src, ./url/text())
+  
+}
+
+
+@remove: $tbody//img[@class="_play"]
+@remove: $tbody//div[@style="padding-bottom: 0;"]
+@remove: $tbody//div[@class="temas-relacionados"]
+
+@replace("\u00a0", ""): $tbody//p/text()
+
+
+
+
+

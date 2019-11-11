@@ -1,0 +1,33 @@
+~version: "2.0"
+
+$tbody: //div[has-class("node-content content body")]
+body: $tbody
+
+
+@debug: $tbody
+
+
+@replace_tag(<img>): //figure/amp-img
+
+
+title: //div[has-class("node-header is-margin-tb")]/h1
+subtitle: //div[has-class("node-header is-margin-tb")]/div[@class="node-content teaser is-four-fifths-desktop is-margin-t"]/p
+
+
+@append_to(//div[has-class("is-relative")]/amp-carousel/figure): //div[has-class("column main-content is-three-quarters-desktop is-three-fifths-tablet")]/amp-carousel/figcaption
+cover: //div[has-class("is-relative")]/amp-carousel/figure
+
+@replace("T"," "): //meta[@name="date"]/@content
+@replace(":[0-9][0-9]-.*", "")
+published_date: $@
+
+
+##Para dar formato a las notas relacionadas en medio del articulo
+@replace_tag(<related>): //div[has-class("is-margin-lr node-related is-margin-b")]
+@replace_tag(<div>): $@//h3
+@replace_tag(<h1>): //related[has-class("is-margin-lr node-related is-margin-b")]/figcaption
+
+@remove: $tbody//script
+@remove: $tbody//div[has-class("block-ad-node")]
+@remove: $tbody//div[has-class("bloque-ads")]
+@remove: $tbody//div[has-class("notification is-padding-lr")]

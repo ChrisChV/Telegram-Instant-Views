@@ -1,0 +1,36 @@
+~version: "2.1"
+
+$tbody: //div[@class="new_text "]
+body: $tbody
+
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+
+
+title: //h1[@class="new_title"]
+kicker: //h4[@class="new_pretitle"]
+
+@prepend_to($tbody): //h4[@class="new_entry "]
+@replace_tag(<b>): $@
+
+@datetime(0, "es-ES", "yyyy-MM-dd HH:mm"): //meta[@name="date"]/@content
+published_date: $@
+@datetime(0, "es-ES", "EEEE',' dd 'de' MMMM 'de' yyyy"): //span[@class="date"]/text()
+published_date: $@
+
+@map($tbody//img){
+  @wrap(<figure>): $@
+  $tfigure: $@
+  #@debug: $tfigure/next-sibling::div[@class="imagefooterprint"]
+  @debug: $tfigure/../..
+}
+
+@debug: //div[@class="imagefooterprint"]
+
+site_name: "La Ley"
+image_url: $tbody//img/@src
+
+@replace("\u00a0", ""): $tbody//p/text()

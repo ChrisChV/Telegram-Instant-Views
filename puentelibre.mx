@@ -1,0 +1,37 @@
+~version: "2.1"
+
+$tbody: //article[@id="article-post"]
+body: $tbody
+
+@replace_tag(<div>): $tbody//p/span/img/../..
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//em/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//p/span/iframe/../..
+@replace_tag(<div>): $tbody//a/span/img/../..
+@replace_tag(<div>): $tbody//em/span/img/../..
+
+
+title: $tbody//header/h1
+author: $tbody//blockquote[@style="padding: 0px"]//footer//strong
+author_url: $tbody//blockquote[@style="padding: 0px"]//footer//a/@href
+
+
+@datetime(0, "es-ES", "dd MMMM yyyy"): $tbody//blockquote[@style="padding: 0px"]//footer[2]/text()
+published_date: $@
+
+cover: $tbody//div[has-class("complemento-item")]/img
+
+
+@replace_tag(<b>): $tbody//blockquote[@style="padding: 0px"]
+
+site_name: "Puente Libre.mx"
+
+
+@remove: $tbody//footer
+@remove: $tbody//ul[@class="share-buttons"]
+@remove: $tbody//header
+@remove: $tbody//b[@style="padding: 0px"]//footer
+
+@replace("\u00a0", ""): $tbody//p/text()

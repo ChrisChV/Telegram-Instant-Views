@@ -1,0 +1,31 @@
+~version: "2.0"
+
+$tbody: //div[@class="entry-inner"]
+body: $tbody
+
+title: //h1[has-class("entry-title")]
+subtitle: //div[@class="bajada"]
+
+@replace_tag(<div>): $tbody//p/img/..
+@replace_tag(<div>): $tbody//p/iframe/..
+@replace_tag(<div>): $tbody//a/img/..
+@replace_tag(<div>): $tbody//strong/img/..
+@replace_tag(<div>): $tbody//p/span/img/../..
+
+@prepend_to($tbody): //div[@class="post-format"]//ul[@class="slides"]
+@replace_tag(<slideshow>): $@
+@replace_tag(<figure>): $@/li
+@replace_tag(<figcaption>): $@/div[@class="image-caption"]
+
+@replace_tag(<h1>): $tbody//span[@style="color: #000080;"]
+
+@replace("-[0-9][0-9][0-9]x([0-9][0-9][0-9][0-9]|[0-9][0-9][0-9])",""): $tbody//img/@src
+
+@wrap_inner(<figure>): $tbody//div[has-class("wp-caption")]
+@wrap(<figcaption>): $@//p[@class="wp-caption-text"]
+
+@remove: $tbody//div[@class="heateor_sss_sharing_container heateor_sss_horizontal_sharing"]
+@remove: $tbody//div[has-class("yuzo_related_post")]
+
+@unsupported: $tbody//iframe[contains(@id,"audio")]
+@unsupported: $tbody//a[@class="pdfemb-viewer"]

@@ -1,15 +1,288 @@
 ~version: "2.0"
 
-$tbody: //div[@id="article-body"]
+?path:/.+
 
+@if(//div[@id="article-body"]){
+  $tbody: //div[@id="article-body"]  
+}
+@if(//div[has-class("pad x-gallery-vertical")]){
+  $tbody: //div[has-class("pad x-gallery-vertical")]
+  @remove: //figure/div/div[@class="social social-vertical"]
+  #@debug: //figure
+}
+
+
+
+
+##Para dar formato a los slideshow
+@replace("\\[", "{"): //div[has-class("media widen x-gallery-photo x-gallery-carrusel")]/div/@data-sources
+@replace("]", "}")
+@replace("{{","{\\\"images\\\":[{")
+@replace("}}","}]}")
+@replace("\\\\","")
+@html_to_dom
+@json_to_xml: $@/text()
+@replace_tag(<slideshow>): $@
+@append_to($@/../..): $@
+@replace_tag(<div>): $@/images
+@replace_tag(<figure>): $@/item
+@replace_tag(<img>): $@/src
+@replace_tag(<figcaption>): $@/../caption
+@map($@/../img){
+  @set_attr(src, $@/text()): $@
+}
+@if_not($tbody//slideshow){
+  @prepend_to($tbody): //slideshow
+}
+@if($tbody//slideshow){
+  @remove: ($tbody/div[has-class("media")]/figure)[1]
+  
+}
+@replace("u0022", "\""): //slideshow//figure/figcaption/text()
+
+@map($tbody//div[@itemprop="video"]//a[@href="#video"]){
+  $tvideo: $@/../..
+  
+  @if_not($tvideo/../meta[@itemprop="contentUrl"]) {  
+    htmlencode: $tvideo//a/@data-x
+    
+    @match("https:.*www.youtube.com.*watch.v=...........")
+    @replace("\\\\" , "")
+    @append(<iframe>, src, $tvideo//a/@data-x): $tvideo
+    @remove: $tvideo//a[@href="#video"]
+    
+  }
+  @if($tvideo/../meta[@itemprop="contentUrl"]){
+    @match("https://www.youtube.com.*"): $tvideo/../meta[@itemprop="contentUrl"]/@content
+    $tcontent: $tvideo/../meta[@itemprop="contentUrl" and @content= ""]
+    @if_not($tcontent){
+      @append(<iframe>, src, $tvideo/../meta[@itemprop="contentUrl"]/@content): $tvideo
+      @remove: $tvideo//a[@href="#video"]
+      
+    }
+    @if($tcontent) {
+      @html_to_dom: $tvideo//a[@href="#video"]/@data-x
+      @replace("\\\\", "")
+      @match("playlist.*{.*}.,")
+      @replace("playlist\\\":", "")
+      @replace("\\\"", "")
+      @match("360p:.*mp4")
+      @replace("360p:", "")
+      @append(<video>, src, $@): $tvideo
+      @remove: $tvideo//a[@href="#video"]
+    }
+    
+    
+  }
+  
+  
+  
+  
+}
+
+
+
+##Para dar formato a las cites de las figuras
+@map(//figure/figcaption){
+  @if($@//span[@class="fuente"]){
+    $tcite: $@    
+    @append_to($tcite[1]): $@/../text()[2]
+    @combine: $tcite
+    @replace_tag(<cite>): $tcite
+    @replace("\\|", ""): $@/../text()
+  }
+}
+
+
+
+## Para dar formato al los audios
+$tplayers: //div[starts-with(@id, "audioplayer")]
+@map($tplayers) {
+  $taudioplayer: $@
+  @html_to_dom: $taudioplayer/next-sibling::script/text()
+  @clone
+  @match("media: 'https:.*mp3")
+  @replace("media: '", "")
+  $taudio: $@ 
+  #@debug: $@/prev-sibling::dom
+  @match("title: '.*'"): $@/prev-sibling::dom
+  @replace("title: ", "")
+  @replace("'", "")
+  $taudiotitle: $@
+  @replace_tag(<audio>): $taudioplayer
+  @set_attr(src, $taudio/text())
+  @wrap(<figure>)
+  @append(<figcaption>): $@
+  @append_to($@): $taudiotitle
+
+}
+
+## Para dar formato a los videos
+#@map($tbody/div[has-class("media")]/../div[@itemprop="video"]/figure/div/a[@href="#video"]){
+#  $tvideo: $@
+#  @if_not($tvideo/../../../meta[@itemprop="contentUrl"]) {  
+#    htmlencode: $tvideo/@data-x
+#    @match("https:.*www.youtube.com.*watch.v=...........")
+#    @replace("\\\\" , "")
+#    @map($tvideo/..){
+#      @append(<iframe>, src, $@/a/@data-x): $@  
+#    }
+#  }
+#  @if($tvideo/../../../meta[@itemprop="contentUrl"]){
+#    @map($@/../figure/div/a[@href="#video"]/..){
+#      @append(<iframe>, src, $@/../../meta[@itemprop="contentUrl"]/@content): $@
+#    }  
+#  }
+#  @if($tvideo/../../../meta[@itemprop="name"]){
+#    @replace_tag(<video>): $tvideo/..
+#    @replace_tag(<source>): $@/iframe
+#    @remove: $@/../a
+#  }
+#}
+#@remove: $tbody/div[has-class("media")]/../div[@itemprop="video"]/figure/div/a[@href="#video"]
+
+
+
+htmlencode: $tbody/div[has-class("media")]/../div[@itemprop="video"]/figure/div/a[@href="#escuchar"]/@data-x
+@replace("\\\\" , "")
+@replace("\"", "")
+@match("360p:https://e.rpp-noticias.io.*mp4}")
+@replace("}","")
+@replace("360p:","")
+@map($tbody/div[has-class("media")]/../div[@itemprop="video"]/figure/div/a[@href="#escuchar"]/..){
+  @replace_tag(<video>): $@
+  @append(<source>, src, $@/a/@data-x): $@
+}
+@remove: $tbody/div[has-class("media")]/../div[@itemprop="video"]/figure/video/a[@href="#escuchar"]
+
+
+##Para dar formato al cuerpo
 body: $tbody
 title: //header[has-class("story-header")]/h1
+title: //h1[@itemprop="headline"]
+subtitle: //div[has-class("sumary")]/p
+subtitle: //div[has-class("sumary")]
+subtitle: //div[@class="description nuopi_detdescrip"]/p
+author: //div[@id="author-name"]/a/span
+author: //div[@id="author-name"]
+author: //div[has-class("author-name")]/a
+author: $tbody/div/div[@class="nuopi_detautor"]/div/a
+author: //div[has-class("author-bio")]/div/a[@class="name"]
+author_url: $tbody/div/div[@class="nuopi_detautor"]/div/a/@href
+author_url: //div[has-class("author-bio")]/div/a[@class="name"]/@href
+author_url: //div[has-class("author-name")]/a/@href
 
-cover: $tbody/div[has-class("media")]/figure
+description: $subtitle
 
+
+##Para dar formato al cover
+@if_not(//div[has-class("pad x-gallery-vertical")]) {
+  cover: //div[has-class("story-header")]/next-sibling::div[@class="infographic"]/div/figure
+  cover: //div[has-class("col-primary")]/div[@class="media"]/figure
+  cover: $tbody//div[@class="ads"]/prev-sibling::div[has-class("media")]/figure
+  #cover: $tbody/div[has-class("media")]/figure
+  cover: //div[has-class("media-info")]/figure
+  cover: //div[has-class("infographic widen")]/div/img
+  #cover: //div[has-class("cover")]/..
+}
+
+
+## Algunas imagenes tienen el src en el content
+@set_attr(src, ./@content): //img
+
+
+#@if(//div[has-class("media widen x-gallery-photo x-gallery-carrusel")]){
+# @replace("\\[","{"): //div[has-class("media widen x-gallery-photo x-gallery-carrusel")]/div/@data-sources
+# @replace("]","}")
+# @replace("\"", "")
+# @replace("\\\\", "")
+# @debug
+
+#}
+
+
+##Para dar formato a la fecha
+@replace("T", " "): //meta[@property="og:updated_time"]/@content
+@replace(":[0-9][0-9]-.*", "")
+published_date: $@
+
+## Para los relacionados
 @append(<related>): $tbody
 @replace_tag(<h1>): //div[has-class("related-news box-mod")]/div[@class="box-header"]/div
 @append_to($tbody/related)
 @append_to($tbody/related): //div[has-class("related-news box-mod")]/div/div/div/div/h2/a
+
+
+
+
+##Para los relacionados entre el articulo
+@remove: //div[has-class("related")]//figure
+@replace_tag(<div>): //div[has-class("related")]//h3
+@replace_tag(<h1>): //div[has-class("related")]//div[@class="title"]
+@replace_tag(<related>): //div[has-class("related")]
+
+
+
+@map(//related[has-class("related")]/a){
+  @before_el($@): $@/h1
+}
+@map(//related[has-class("related")]/a) {
+  @before_el($@): $@/div[@class="inner"]/h1
+}
+
+##Para dar formato a un div(story-info) que esta al final de una pagina
+@replace_tag(<blockquote>): $tbody//div[has-class("story-info")]
+@prepend(<br>): $@/div[@class="sumary"]/p
+@replace_tag(<b>): $tbody//blockquote[has-class("story-info")]/div[@class="title"]
+
+## Para dar formato a las cites
+@replace_tag(<cite>): $tbody//aside[@class="cite "]//span[@class="summary"]
+
+#@remove: //div[has-class("related one right")]
+#@remove: //div[has-class("related one left")]
+#@remove: //div[has-class("related figure-related right")]
+#@remove: //div[has-class("related figure-related")]
+#@remove: //div[has-class("related figure-related left")]
+#@remove: //div[has-class("cite-content")]/div[@class="related"]
+
+
+
+@remove: //div[has-class("cite-content")]/aside/div[@class="social"]
+@remove: $tbody/div/div[@class="nuopi_detautor"]
+#@remove: (//em)[last()]
+@remove: //figure[@itemprop="image"]/figcaption/ul
+@remove: $tbody//a[@data-mce-href="https://www.facebook.com/progamerRPP/"]/..
+@remove: $tbody//a[@data-mce-href="https://www.facebook.com/MongabayLatam/"]/..
+@remove: $tbody//div[@class="tags"]
+@remove: $tbody//a[@class="btn-link-comments"]
+
+@replace_tag(<div>): $tbody//aside//blockquote[@class="twitter-tweet"]/../../..
+@replace_tag(<div>): $tbody//aside//blockquote[@class="instagram-media"]/../../..
+@replace_tag(<div>): $tbody//aside//aside
+@remove: $tbody//aside//related
+
+
+
+##Para el que remueve el ultimo p
+#@if($tbody//p[last()]/strong/em){
+#  @remove: $tbody//p[last()]
+#}
+
+#@map($tbody//div[@itemprop="video"]){
+#  $tvideo: $@  
+#  @if($tbody//div[@itemprop="video"]//meta[@itemprop="contentUrl"]){
+#    @replace_tag(<video>): $tvideo
+#    
+#    #@debug: $@/meta[@itemprop="contentUrl"]/@content
+#    @set_attr(src, $@/meta[@itemprop="contentUrl"]/@content): $@
+#    
+#  } 
+#}
+
+@unsupported: //iframe[has-class("scribd_iframe_embed")]
+@unsupported: //opta-widget
+
+
+
 
 

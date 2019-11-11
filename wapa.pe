@@ -1,0 +1,69 @@
+~version: "2.0"
+
+$tbody: //div[has-class("PostInternal__description")]
+body: $tbody
+
+#debug: $tbody//iframe
+
+
+@replace("\n", ""): //h1[has-class("PostInternal__title")]/text()
+@replace("\t", "")
+
+title: //h1[has-class("PostInternal__title")]/text()
+author: //div[has-class("PostInternal__author")]/text()
+subtitle: //div[has-class("PostInternal__bajada")]/p[2]
+site_name: "Wapa.pe"
+
+
+cover: //figure[has-class("PostInternal__figure")]
+
+
+@datetime(0, "en-US", "dd/MM7yyyy hh:mm aa"): //div[has-class("PostInternal__date")]/text()
+published_date: $@
+
+
+
+@remove: $tbody//blockquote//div[has-class("org-section_TePuedeInteresar")]//div[@class="item__image"]
+
+@replace_tag(<h1>): $tbody//blockquote//div[has-class("org-section_TePuedeInteresar")]//div[@class="item__title"]/p/strong
+@replace_tag(<related>): $tbody//blockquote//div[has-class("org-section_TePuedeInteresar")]/..
+
+@remove: $tbody//section[has-class("org-section_TePuedeInteresar")]//img
+@replace_tag(<related>): $tbody//section[has-class("org-section_TePuedeInteresar")]
+
+@replace_tag(<div>): $tbody//img/..
+@replace_tag(<div>): $tbody//iframe/..
+
+@replace_tag(<slideshow>): //div[has-class("PostInternal__head")]//div[has-class("org-mod-carousel_Format3")]/div[@class="Format3__slide"]/div[@id="carousel-interna"]/ul[1]
+@prepend_to($tbody): $@
+@replace_tag(<figcaption>): $@/li/div/div/div/div
+@map($@){
+  @append_to($@/../../../figure): $@
+}
+
+##Para dar formato a los videos
+@map($tbody//div[@itemtype="https://schema.org/VideoObject"]){
+  $tvideo: $@
+  @match("https:.*mp4"): $tvideo/comment()
+  @append(<source>, src, $@): $tvideo
+  @replace_tag(<video>): $tvideo
+}
+
+
+#@map($tbody//iframe){
+#  @inline: $@
+#}
+
+#@prepend_to($tbody): //div[has-class("PostInternal__head")]//div[has-class("org-mod-carousel_Format3")]/div[@class="Format3__slide"]/div/iframe
+#@unsupported
+
+@unsupported: $tbody//div[@style="position:relative; padding-bottom:56.25%; overflow:hidden;"]/iframe
+@unsupported: $tbody//div[@class="playbuzz"]
+
+
+
+
+#@remove: $tbody//blockquote
+
+##PELIGRO, ESTAS BORRANDO BLOCKQUOTES
+##NO PUEDES BORRAR BLOCKQUOTES PORQ EL TWITTER ESTA EN UNO
